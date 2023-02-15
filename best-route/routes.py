@@ -1,13 +1,3 @@
-import pandas as pd
-import numpy as np
-from geopy.geocoders import Nominatim
-from geopy.distance import great_circle
-from scipy.spatial.distance import cdist
-from sklearn.cluster import KMeans
-import re
-
-
-
 data = pd.read_csv(r'C:\Users\martin.olivares\Desktop\projects\best-route\test_3.csv')
 
 df=pd.DataFrame()
@@ -15,10 +5,13 @@ df['address']=data['Direccion de inicio']
 df['hora_recogida']=data['Hora de recogida']
 df['destino']=data['Dirección destino']
 
+
+# Agrega la columna de etiquetas al dataframe
+df['label'] = np.nan
+
+# Agrupa las direcciones en función de su distancia usando KMeans
 geolocator = Nominatim(user_agent="geoapiExercises")
-
 grouped = df.groupby("hora_recogida")
-
 for name, group in grouped:
     if len(group) > 1:
         # Calcula la distancia entre cada par de direcciones de recogida y destino
@@ -56,8 +49,9 @@ for name, group in grouped:
             kmeans.n_clusters -= 1
             distances = cdist(X_final[kmeans.labels_ == 0], kmeans.cluster_centers_)
             cluster_labels = np.argmin(distances, axis=1)
-            # Obtener dirección, destino y etiqueta de cada grupo
-        for idx, label in enumerate(np.unique(cluster_labels)):
-            addresses = list(group.iloc[cluster_labels == label]['address'])
-            destino = list(group.iloc[cluster_labels == label]['destino'])[0]
-            print(f"Grupo {idx + 1} - Direcciones: {addresses}, Destino: {destino}, Etiqueta: {label}")
+        
+        # Agrega las etiquetas al dataframe
+        for i in range(len(group)):
+            df.loc[group.index[i], 'label'] = cluster_labels[i]
+
+df
