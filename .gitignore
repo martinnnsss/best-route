@@ -1,0 +1,6 @@
+*.csv
+*.xlsx
+/Estimaciones
+/Reservas_v2
+/data
+/cache
